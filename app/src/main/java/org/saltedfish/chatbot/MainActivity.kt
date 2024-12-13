@@ -140,6 +140,7 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.ui.text.style.TextAlign
 import java.util.concurrent.CountDownLatch
 
@@ -767,7 +768,6 @@ class MainActivity : ComponentActivity() {
     }
 
     fun parseDuration(input: String): Int {
-        // 匹配一个或多个数字，后面可能有任意数量的空格，然后是时间单位的完整形式或简写形式
         val regex = "(\\d+)\\s*(hours?|h|minutes?|m|seconds?|s)".toRegex()
         var totalSeconds = 0
 
@@ -989,9 +989,9 @@ fun Photo(navController: NavController, viewModel: PhotoViewModel = viewModel())
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
             // Handle the returned Uri
             it?.let {
-                bitmap.value = it
-
-                viewModel.setBitmap(it)
+//                bitmap.value = it
+//
+//                viewModel.setBitmap(it)
             }
             if (it == null) {
                 navController.popBackStack()
@@ -1065,8 +1065,8 @@ fun Home(navController: NavController) {
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedIndex by remember { mutableStateOf(0) }
     var selectedBackend by remember { mutableStateOf(0) }
-    val modelNames = listOf("PhoneLM", "Qwen 2.5", "Qwen 1.5")
-    val deviceNames = listOf("CPU", "NPU")
+    val modelNames = listOf("PhoneLM", "Qwen 2.5", "SmolLM")
+    val deviceNames = listOf("CPU")
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
@@ -1077,9 +1077,9 @@ fun Home(navController: NavController) {
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                modifier = Modifier.padding(bottom = 10.dp),
+                modifier = Modifier.padding(bottom = 40.dp).sizeIn(minWidth = 220.dp, minHeight = 64.dp),
                 icon = { Icon(Icons.Rounded.Settings, "Star Us!") },
-                text = { Text(text = "Model Settings") },
+                text = { Text(text = "LLM Model Selection") },
                 onClick = {
                     // visit Github!
 //                    val intent = Intent(Intent.ACTION_VIEW)
@@ -1113,7 +1113,7 @@ fun Home(navController: NavController) {
                         .padding(16.dp)
                 ) {
                     Text(
-                        "Choose a Instructed LLM for non-multimodal tasks",
+                        "Choose an LLM Model",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -1139,6 +1139,32 @@ fun Home(navController: NavController) {
                         }
 
                     }
+                    Text(
+                        "Choose a VLM Model",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp)
+                    ) {
+                        val modelName = "Phi-3 V"  // Fixed value
+
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = 0, // Only one button, so the index is 0
+                                count = 1   // Only one item
+                            ),
+                            selected = true, // Only one option, so it's always at index 0
+
+                            onClick = {
+                            }
+                        ) {
+                            Text(text = modelName)  // Display the fixed value text
+                        }
+                    }
+
                     Text(
                         "Choose a Backend",
                         style = MaterialTheme.typography.titleMedium,
@@ -1438,22 +1464,26 @@ fun ChatInput(
     enable: Boolean,
     withImage: Boolean,
     onImageSelected: (Uri?) -> Unit = {},
-
     onMessageSend: (Message) -> Unit = {}
 ) {
     var text by remember { mutableStateOf("") }
     var imageUri = remember { mutableStateOf<Uri?>(null) }
 
-//softkeyborad
-    val keyboardController = LocalSoftwareKeyboardController.current
+    // Check if the button should be enabled
+    val isSendButtonEnabled = if (withImage) {
+        imageUri.value != null // Button enabled only if an image is selected in image reader mode
+    } else {
+        text.isNotBlank() // Button enabled only if text is not blank in non-image reader mode
+    }
 
+    val keyboardController = LocalSoftwareKeyboardController.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
         it?.let {
             imageUri.value = it
             onImageSelected(it)
         }
-
     }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
@@ -1471,7 +1501,6 @@ fun ChatInput(
         }
         Spacer(modifier = Modifier.width(4.dp))
         OutlinedTextField(
-//            enabled = enable,
             value = text,
             onValueChange = { text = it },
             modifier = Modifier
@@ -1480,34 +1509,37 @@ fun ChatInput(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = Color.White.copy(0.5f),
                 focusedContainerColor = Color.White.copy(0.5f),
-
-                )
-
+            )
         )
-        IconButton(onClick = {
-            keyboardController?.hide()
-            val punctuation = listOf('.', '?', '!', ',', ';', ':', '。', '？', '！', '，', '；', '：')
-            if (text.isNotEmpty() && !punctuation.contains(text.last()) && text.last() != '\n') text += "."
-            onMessageSend(
-                Message(
-                    text,
-                    true,
-                    0,
-                    type = if (imageUri.value == null) MessageType.TEXT else MessageType.IMAGE,
-                    content = imageUri.value
+        IconButton(
+            onClick = {
+                keyboardController?.hide()
+                val punctuation = listOf('.', '?', '!', ',', ';', ':', '。', '？', '！', '，', '；', '：')
+                if (text.isNotEmpty() && !punctuation.contains(text.last()) && text.last() != '\n') text += "."
+                onMessageSend(
+                    Message(
+                        text,
+                        true,
+                        0,
+                        type = if (imageUri.value == null) MessageType.TEXT else MessageType.IMAGE,
+                        content = imageUri.value
+                    )
                 )
-            );text = "";imageUri.value = null;onImageSelected(null)
-        }, enabled = enable) {
+                text = ""
+                imageUri.value = null
+                onImageSelected(null)
+            },
+            enabled = enable && isSendButtonEnabled // Button is disabled when conditions are not met
+        ) {
             Icon(
                 painter = painterResource(id = R.drawable.up),
                 contentDescription = "Send",
                 Modifier.size(36.dp)
             )
         }
-
     }
-
 }
+
 
 @Composable
 fun ColumnScope.ChatBubble(
@@ -1579,7 +1611,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
     Column(modifier = modifier.padding(top = 56.dp, start = 20.dp)) {
         Text(
-            text = "Let's Chat",
+            text = "LLM Assistant",
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp,
             lineHeight = 30.sp,
@@ -1587,7 +1619,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         )
         // Subtitle
         Text(
-            text = "See what I can do for you",
+            text = "Ask anything, chat anything offline",
             style = MaterialTheme.typography.titleLarge,
             lineHeight = 24.sp
 
@@ -1633,42 +1665,46 @@ fun MainEntryCards(
             EntryCard(icon = R.drawable.text,
                 backgroundColor = Color(0xEDADE6AA),
                 title = "Chat",
-                subtitle = "\" The meaning of life is ....\"",
+                subtitle = "\" What is quantum computing....\" \n \"Any trending fashion....\" \n (If model not exist, you will be redirected to download)",
                 onClick = { navController.navigate("chat/$selectedIndex?type=3&device=$selectedBackend") })
-            Spacer(Modifier.width(8.dp))
+
+        }
+        Spacer(Modifier.height(8.dp))
+        Row {
             EntryCard(icon = R.drawable.image,
                 backgroundColor = Purple80,
                 title = "Image Reader",
-                subtitle = "\" say..How many stars in the sky?\"",
+                subtitle = "\" say..What is the content of the image?\" \n" +
+                        "\"Caption image....\" \n" +
+                        " (If model not exist, you will be redirected to download)",
                 onClick = { navController.navigate("chat/$selectedIndex?type=1") }
 
             )
 
         }
-        Spacer(Modifier.height(8.dp))
-        Row {
-            EntryCard(icon = R.drawable.tools,
-                // Pick up a pink
-                backgroundColor = Color(0xEDF8BBD0),
-                title = "Takeover My Phone",
-                subtitle = "\" Show me the power\"",
-                onClick = { navController.navigate("chat/$selectedIndex?type=4&device=$selectedBackend") })
-            Spacer(Modifier.width(8.dp))
-            EntryCard(icon = R.drawable.more_text,
-                // pick a blue style
-                backgroundColor = Color(0xEDB3E5FC),
-                title = "Read My Screen",
-                subtitle = "",
-                onClick = {
-                    // visit Github!
-//                    val intent = Intent(Intent.ACTION_VIEW)
-//                    intent.data = Uri.parse("https://github.com/UbiquitousLearning/mllm")
-//                    context.startActivity(intent)
-                    navController.navigate("vqa")
-                }
-
-            )
-        }
+//        Row {
+//            EntryCard(icon = R.drawable.tools,
+//                // Pick up a pink
+//                backgroundColor = Color(0xEDF8BBD0),
+//                title = "Takeover My Phone",
+//                subtitle = "\" Show me the power\"",
+//                onClick = { navController.navigate("chat/$selectedIndex?type=4&device=$selectedBackend") })
+//            Spacer(Modifier.width(8.dp))
+//            EntryCard(icon = R.drawable.more_text,
+//                // pick a blue style
+//                backgroundColor = Color(0xEDB3E5FC),
+//                title = "Read My Screen",
+//                subtitle = "",
+//                onClick = {
+//                    // visit Github!
+////                    val intent = Intent(Intent.ACTION_VIEW)
+////                    intent.data = Uri.parse("https://github.com/UbiquitousLearning/mllm")
+////                    context.startActivity(intent)
+//                    navController.navigate("vqa")
+//                }
+//
+//            )
+//        }
 
     }
 
@@ -1688,8 +1724,10 @@ fun RowScope.EntryCard(
         onClick = onClick,
         modifier = Modifier
             .weight(0.5f)
-            .aspectRatio(0.8f),
-        shape = RoundedCornerShape(20),
+            .heightIn(min = 180.dp, max = 260.dp) // Control height directly
+            .padding(8.dp),
+//            .aspectRatio(0.8f),
+        shape = RoundedCornerShape(10),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),

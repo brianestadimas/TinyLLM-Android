@@ -27,7 +27,7 @@ android {
             }
         }
         ndk{
-            abiFilters  'arm64-v8a'
+            abiFilters 'arm64-v8a'
 
         }
     }
@@ -43,6 +43,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+    kapt {
+        correctErrorTypes true
     }
     buildFeatures {
         compose true
@@ -83,7 +86,11 @@ dependencies {
     implementation "com.google.android.material:material:1.12.0"
     implementation "org.jetbrains.kotlin:kotlin-reflect" // Ensure compatibility with your Kotlin version
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.+"
-    testImplementation 'junit:junit:4.13.2'
+//    testImplementation 'junit:junit:4.13.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'  // Ensure this is included
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'  // Optional for UI testing
+    androidTestImplementation 'androidx.test:runner:1.5.2'  // Required for running Android tests
 //    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 //    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 //    androidTestImplementation platform('androidx.compose:compose-bom:2023.08.00')

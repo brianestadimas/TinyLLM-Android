@@ -15,18 +15,21 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #include "functional"
+#include <any>
 
 namespace mllm {
     class Tokenizer;
-    class PreProcessor;
+    // class PreProcessor;
     class Module;
     class Tensor;
+    // class Phi3VProcessor;
     enum PreDefinedModel {
         QWEN25 = 0,
-        FUYU,
+        PHI3V,
         Bert,
         PhoneLM,
-        QWEN15
+        QWEN15,
+        SMOLLM
     };
 
     enum MLLMBackendType {
@@ -44,9 +47,11 @@ namespace mllm {
         };
 
         std::shared_ptr<Tokenizer> tokenizer_;
-        PreProcessor *processor_;
+        // PreProcessor *processor_;
         std::shared_ptr<Module> module_;
         std::shared_ptr<Module> prefill_module_;
+        // Phi3VProcessor* phi3v_processor_ = nullptr;
+        std::any phi3v_processor_;
 
         // Tokenizer *tokenizer_ = nullptr;
         unsigned int eos_id_ = 2;
@@ -59,8 +64,10 @@ namespace mllm {
     public:
         bool setUp(const std::string &base_path, std::string weights_path, std::string qnn_weights_path, std::string vocab_path, std::string merge_path, PreDefinedModel model, MLLMBackendType backend_type = MLLMBackendType::CPU);
         void setCallback(callback_t callback);
-        void run(std::string &input_str, uint8_t *image, unsigned max_step, unsigned image_length, bool chat_template = false);
+        void run(std::string &input_str, std::string &image, unsigned max_step, unsigned image_length, bool chat_template = false);
         std::vector<float> runForResult(std::string &input_str);
+
+
         ~LibHelper();
     };
 } // namespace mllm

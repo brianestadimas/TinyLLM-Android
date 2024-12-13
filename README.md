@@ -35,7 +35,7 @@
     <td style="text-align:center;"></td>
   </tr>
   <tr>
-    <td rowspan="2">Qwen-1.5 1.8B</td>
+    <td rowspan="2">SmolLM 1.7B</td>
     <td>CPU</td>
     <td style="text-align:center;">✔️</td>
     <td style="text-align:center;"></td>

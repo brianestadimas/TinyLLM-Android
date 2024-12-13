@@ -1,7 +1,7 @@
 package org.saltedfish.chatbot
 
 enum class ModelType{
-    QWEN25,FUYU,EMBEDDING,PhoneLM,QWEN15,EMPTY
+    QWEN25,PHI3V,EMBEDDING,PhoneLM,QWEN15,SMOLLM,EMPTY
 }
 object JNIBridge {
     var modelType_:ModelType = ModelType.EMPTY
@@ -25,10 +25,11 @@ object JNIBridge {
     fun Init(modelType:Int,basePath:String,modelPath:String,qnnmodelPath:String,vacabPath:String,mergePath:String="",backend: Int=0):Boolean{
         modelType_ = when(modelType){
             0->ModelType.QWEN25
-            1->ModelType.FUYU
+            1->ModelType.PHI3V
             2->ModelType.EMBEDDING
             3->ModelType.PhoneLM
             4->ModelType.QWEN15
+            5->ModelType.SMOLLM
             else->ModelType.EMPTY
         }
 //        val mergePath=basePath+mergePath
@@ -37,9 +38,9 @@ object JNIBridge {
 //        val basePath=""
         return init(modelType,basePath,modelPath,qnnmodelPath,vacabPath,mergePath,backend)
     }
-    private external fun init(modelType:Int, basePath:String, modelPath:String, qnnmodelPath:String, vacabPath:String,mergePath:String,backend:Int):Boolean
+    private external fun init(modelType:Int, basePath:String, modelPath:String, qnnmodelPath:String, vacabPath:String?, mergePath:String?,backend:Int):Boolean
     external fun run(id:Int, input:String, maxStep:Int, applyChatTemplate:Boolean=true)
-    external fun runImage(id:Int,image:ByteArray,text:String,maxStep:Int)
+    external fun runImage(id:Int,image:String,text:String,maxStep:Int)
     external fun runForOnce(input: String):FloatArray
     external fun setCallback()
     external fun stop()

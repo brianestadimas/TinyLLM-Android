@@ -109,10 +109,11 @@ Java_org_saltedfish_chatbot_JNIBridge_run(JNIEnv *env, jobject thiz, jint id, js
     }));
     libHelper->setCallback(*callback);
     auto input_c = string(env->GetStringUTFChars(input, nullptr));
-    libHelper->run(input_c, nullptr, maxStep, 0, chatTemplate == JNI_TRUE);
+    std::string image_path = "";
+    libHelper->run(input_c, image_path, maxStep, 0, chatTemplate == JNI_TRUE);
 }
 extern "C" JNIEXPORT void JNICALL
-Java_org_saltedfish_chatbot_JNIBridge_runImage(JNIEnv *env, jobject obj, jint id, jbyteArray image,
+Java_org_saltedfish_chatbot_JNIBridge_runImage(JNIEnv *env, jobject obj, jint id, jstring image,
                                                jstring text, jint maxStep) {
     callback.reset(new callback_t([env, id](std::string str, bool isEnd,const vector<double>& profile) {
         try {
@@ -131,9 +132,10 @@ Java_org_saltedfish_chatbot_JNIBridge_runImage(JNIEnv *env, jobject obj, jint id
     }));
     libHelper->setCallback(*callback);
     auto input_c = string(env->GetStringUTFChars(text, nullptr));
-    auto image_c = env->GetByteArrayElements(image, nullptr);
-    libHelper->run(input_c, (uint8_t *) image_c, maxStep, env->GetArrayLength(image));
-    env->ReleaseByteArrayElements(image, image_c, 0);
+    const char* image_chars = env->GetStringUTFChars(image, nullptr);
+    std::string image_c = image_chars ? std::string(image_chars) : "";
+    libHelper->run(input_c, image_c, static_cast<unsigned>(maxStep), 0);
+//    env->ReleaseByteArrayElements(image, image_c, 0);
 }
 extern "C" JNIEXPORT void JNICALL
 Java_org_saltedfish_chatbot_JNIBridge_setCallback(JNIEnv *env, jobject thiz) {
