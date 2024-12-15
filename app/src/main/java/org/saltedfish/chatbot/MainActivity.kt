@@ -111,7 +111,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -142,6 +141,7 @@ import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.ui.text.style.TextAlign
+//import androidx.compose.ui.tooling.preview.Preview
 import java.util.concurrent.CountDownLatch
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -1299,7 +1299,7 @@ fun Chat(
             if (vm.profilingTime.value != null && vm.profilingTime.value?.size!! > 0) Row(
                 modifier = Modifier
                     .fillMaxWidth().background(MaterialTheme.colorScheme.primaryContainer)
-                   , horizontalArrangement = Arrangement.Center
+                , horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "Prefill: ${String.format("%.2f",vm.profilingTime.value!![1])}Tok/s, Decode: ${String.format("%.2f",vm.profilingTime.value!![2])}Tok/s",
@@ -1842,7 +1842,7 @@ fun HistoryItem(icon: Int, text: String, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     ChatBotTheme {
