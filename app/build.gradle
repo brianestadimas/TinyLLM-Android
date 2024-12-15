@@ -3,12 +3,14 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id "io.objectbox"  // Apply last
     id("kotlin-kapt") // Only for Kotlin projects
-
+    id 'com.google.firebase.crashlytics' // Apply Crashlytics plugin
+    id 'com.google.gms.google-services'
 }
 
 android {
     namespace 'org.saltedfish.chatbot'
     compileSdk 34
+    ndkVersion "28.0.12674087"
 
     defaultConfig {
         applicationId "org.saltedfish.chatbot"
@@ -35,6 +37,17 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled true // Optional for native crash reporting
+                unstrippedNativeLibsDir "src/main/jniLibs/arm64-v8a"
+            }
+        }
+        debug {
+            // Optionally enable Crashlytics for debug builds
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled true
+                mappingFileUploadEnabled false // Prevent uploading mapping files for debug
+            }
         }
     }
     compileOptions {
@@ -69,6 +82,15 @@ android {
 dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("io.coil-kt:coil:2.5.0")
+//    implementation 'org.slf4j:slf4j-api:2.0.7'
+//    implementation 'com.github.tony19:logback-android:3.0.0'
+
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+
+    // Add the dependencies for the Crashlytics NDK and Analytics libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-crashlytics-ndk")
+    implementation("com.google.firebase:firebase-analytics")
 
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
@@ -88,6 +110,8 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.+"
 //    testImplementation 'junit:junit:4.13.2'
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.google.firebase:firebase-common-ktx:21.0.0'
+    implementation 'com.google.firebase:firebase-analytics:22.1.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'  // Ensure this is included
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'  // Optional for UI testing
     androidTestImplementation 'androidx.test:runner:1.5.2'  // Required for running Android tests

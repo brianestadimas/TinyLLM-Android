@@ -143,6 +143,8 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.ui.text.style.TextAlign
 import java.util.concurrent.CountDownLatch
+import com.google.firebase.FirebaseApp
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 fun Context.getActivity(): ComponentActivity? = when (this) {
     is ComponentActivity -> this
@@ -199,6 +201,56 @@ class MainActivity : ComponentActivity() {
     var latch = CountDownLatch(1)
     var uri = ""
     var uris: List<String> = listOf()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        FirebaseApp.initializeApp(this)
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true)
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                JNIBridge.stop()
+                this.startActivity(intent)
+            }
+
+        }
+        //enableEdgeToEdge()
+        setContent {
+            ChatBotTheme {
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = "home") {
+                    composable("home") { Home(navController) }
+                    composable(
+                        "chat/{id}?type={type}&device={device}",
+                        arguments = listOf(navArgument("id") { type = NavType.IntType },
+                            navArgument("type") { type = NavType.IntType;defaultValue = 0 },
+                            navArgument("device") { type = NavType.IntType;defaultValue = 0 }
+                        )
+                    ) {
+                        Chat(
+                            navController,
+                            it.arguments?.getInt("type") ?: 3,
+                            it.arguments?.getInt("id") ?: 0,
+                            it.arguments?.getInt("device") ?: 0
+                        )
+                    }
+                    composable("photo") {
+                        Photo(navController)
+                    }
+                    composable("vqa") {
+                        VQA(navController)
+                    }
+                    // A surface container using the 'background' color from the theme
+
+
+                }
+            }
+        }
+    }
+
 
     val creatDocumentLauncher = registerForActivityResult(CreateDocumentWithMime()) { uri: Uri? ->
         this.uri = uri.toString()
@@ -276,51 +328,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                JNIBridge.stop()
-                this.startActivity(intent)
-            }
-
-        }
-        //enableEdgeToEdge()
-        setContent {
-            ChatBotTheme {
-                val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "home") {
-                    composable("home") { Home(navController) }
-                    composable(
-                        "chat/{id}?type={type}&device={device}",
-                        arguments = listOf(navArgument("id") { type = NavType.IntType },
-                            navArgument("type") { type = NavType.IntType;defaultValue = 0 },
-                            navArgument("device") { type = NavType.IntType;defaultValue = 0 }
-                        )
-                    ) {
-                        Chat(
-                            navController,
-                            it.arguments?.getInt("type") ?: 3,
-                            it.arguments?.getInt("id") ?: 0,
-                            it.arguments?.getInt("device") ?: 0
-                        )
-                    }
-                    composable("photo") {
-                        Photo(navController)
-                    }
-                    composable("vqa") {
-                        VQA(navController)
-                    }
-                    // A surface container using the 'background' color from the theme
 
 
-                }
-            }
-        }
-    }
 
     val functionsMap: Map<String, KFunction<*>> by lazy {
         this::class.memberFunctions

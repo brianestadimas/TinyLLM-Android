@@ -7,8 +7,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.MutableLiveData
@@ -27,7 +30,7 @@ import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 data class Photo(
     var id :Int=0,
@@ -46,10 +49,9 @@ Now my query is: %QUERY%
 <|im_end|>
 <|im_start|>assistant
 """
-val MODEL_NAMES = arrayOf("Qwen 2.5","","Bert","PhoneLM", "SmoLLM", "SmoLLM")
+val MODEL_NAMES = arrayOf("PhoneLM","Qwen2.5","SmoLLM","Phi3V", "SmoLLM", "SmoLLM")
 val vision_model = "phi-3-vision-instruct-q4_k.mllm"
-val vision_vocab = "phi3v_vocab.mllm"
-val downloadsPath = Environment.getExternalStorageDirectory().path + "/Download/"
+val vision_vocab = "model/phi3v_vocab.mllm"
 class ChatViewModel : ViewModel() {
 //    private var _inputText: MutableLiveData<String> = MutableLiveData<String>()
 //    val inputText: LiveData<String> = _inputText
@@ -99,21 +101,9 @@ class ChatViewModel : ViewModel() {
         return photo.id
     }
 
-//    private var _assetUri = MutableLiveData<Uri?>(null)
-//    val assetUri = _assetUri
-//    fun setInputText(text: String) {
-//        _inputText.value = text
-//    }
     init {
 
     JNIBridge.setCallback { id,value, isStream,profile ->
-//            val message = Message(
-//                value,
-//                false,
-//                0,
-//                type = MessageType.TEXT,
-//                isStreaming = isStream
-//            )
             Log.i("chatViewModel","id:$id,value:$value,isStream:$isStream profile:${profile.joinToString(",")}")
             updateMessage(id,value.trim().replace("|NEWLINE|","\n").replace("▁"," "),isStream)
             if (!isStream){
@@ -198,178 +188,144 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    private fun logErrorToFile(errorMessage: String) {
-        val logFile = File(Environment.getExternalStorageDirectory(), "chatbot_error_log.txt")
-
-        try {
-            // Create log file if it doesn't exist
-            if (!logFile.exists()) {
-                logFile.createNewFile()
-            }
-
-            // Open file for appending
-            val fileOutputStream = FileOutputStream(logFile, true)
-            val writer = OutputStreamWriter(fileOutputStream)
-
-            // Write the current timestamp and error message
-            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-            writer.write("$timestamp - $errorMessage\n")
-            writer.close()
-        } catch (e: IOException) {
-            Log.e("ChatViewModel", "Error writing to log file", e)
-        }
-    }
 
     fun initStatus(context: Context, modelType: Int = _modelType.value ?: 0) {
-        try {
-            if (_isExternalStorageManager.value != true) return
-
-            val model_id = modelId.value
-            val modelPath = when (modelType) {
-                3 -> {
-                    when (model_id) {
-                        0 -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
-                        1 -> "qwen-2.5-1.5b-instruct-q4_0_4_4.mllm"
-                        2 -> "smollm-1.7b-instruct-q4_0_4_4.mllm"
-                        else -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
-                    }
+        val model_id = when(modelType){
+            1 -> 3
+            else -> modelId.value
+        }
+        val modelPath = when (modelType) {
+            3 -> {
+                when (model_id) {
+                    0 -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
+                    1 -> "qwen-2.5-1.5b-instruct-q4_0_4_4.mllm"
+                    2 -> "smollm-1.7b-instruct-q4_0_4_4.mllm"
+                    else -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
                 }
-                1 -> vision_model
-                else -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
             }
-
-            val modelUrl = when (modelType) {
-                3 -> {
-                    when (model_id) {
-                        0 -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-q4_0_4_4.mllm?download=true"
-                        1 -> "https://huggingface.co/mllmTeam/qwen-2.5-1.5b-mllm/blob/main/qwen-2.5-1.5b-instruct-q4_0_4_4.mllm?download=true"
-                        2 -> "https://huggingface.co/mllmTeam/smollm-1.7b-instruct-mllm/blob/main/smollm-1.7b-instruct-q4_0_4_4.mllm?download=true"
-                        else -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-q4_0_4_4.mllm?download=true"
-                    }
+            1 -> vision_model
+            else -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
+        }
+        val modelUrl = when (modelType) {
+            3 -> {
+                when (model_id) {
+                    0 -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-q4_0_4_4.mllm?download=true"
+                    1 -> "https://huggingface.co/mllmTeam/qwen-2.5-1.5b-mllm/blob/main/qwen-2.5-1.5b-instruct-q4_0_4_4.mllm?download=true"
+                    2 -> "https://huggingface.co/mllmTeam/smollm-1.7b-instruct-mllm/blob/main/smollm-1.7b-instruct-q4_0_4_4.mllm?download=true"
+                    else -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-q4_0_4_4.mllm?download=true"
                 }
-                1 -> "https://huggingface.co/mllmTeam/phi-3-vision-instruct-mllm/blob/main/phi-3-vision-instruct-q4_k.mllm?download=true"  // Placeholder for vision model
-                else -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-q4_0_4_4.mllm?download=true"  // Default for other model types
             }
-
-            // Create the folder for downloading models
+            1 -> "https://huggingface.co/mllmTeam/phi-3-vision-instruct-mllm/blob/main/phi-3-vision-instruct-q4_k.mllm?download=true"
+            else -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-q4_0_4_4.mllm?download=true"
+        }
+        val downloadsPath = getDownloadsPath(context)
+        try{
             val destinationDir = File(downloadsPath)
             if (!destinationDir.exists()) {
                 destinationDir.mkdirs() // Create model directory if it doesn't exist
             }
-            assert(false) { "Assertion error triggered in initStatus." }
 
-            // Extract filename from URL
+
             val destinationFile = File(destinationDir, modelPath)
-
-            // Check if the model file already exists
             if (!destinationFile.exists()) {
-                // Inform the user and open the browser
-    //            openBrowser(context, modelUrl)
                 val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(modelUrl))
                 context.startActivity(browserIntent)
             }
+        } catch (e: Exception) {
+            FirebaseCrashlytics.getInstance().recordException(e)
+        }
 
-    //        val qnnmodelPath = when (modelType) {
-    //            3 -> {
-    //                when (model_id) {
-    //                    0 -> "model/phonelm-1.5b-instruct-int8.mllm"
-    //                    1 -> "model/qwen-2.5-1.5b-chat-int8.mllm"
-    //                    2 -> "model/smollm-1.7b-chat-int8.mllm"
-    //                    else -> "model/phonelm-1.5b-instruct-int8.mllm"
-    //                }
-    //            }
-    //            1 -> ""
-    //            4 -> {
-    //                when (model_id) {
-    //                    0 -> "model/phonelm-1.5b-call-int8.mllm"
-    //                    1 -> "model/qwen-2.5-1.5b-call-int8.mllm"
-    //                    2 -> "model/smollm-1.7b-instruct-int8.mllm"
-    //                    else -> "qwen-2.5-1.5b-call-int8.mllm"
-    //                }
-    //            }
-    //            else -> "model/phonelm-1.5b-instruct-int8.mllm"
-    //        }
-
-            val vacabPath = when (modelType) {
-                1 -> vision_vocab
-                3 -> {
-                    when (model_id) {
-                        0 -> "model/phonelm_vocab.mllm"
-                        1 -> "model/qwen2.5_vocab.mllm"
-                        2 -> "model/smollm_vocab.mllm"
-                        else -> ""
-                    }
+        val vacabPath = when (modelType) {
+            1 -> vision_vocab
+            3 -> {
+                when (model_id) {
+                    0 -> "model/phonelm_vocab.mllm"
+                    1 -> "model/qwen2.5_vocab.mllm"
+                    2 -> "model/smollm_vocab.mllm"
+                    else -> ""
                 }
-                4 -> {
-                    when (model_id) {
-                        0 -> "model/phonelm_vocab.mllm"
-                        1 -> "model/qwen2.5_vocab.mllm"
-                        2 -> "model/smollm_vocab.mllm"
-                        else -> ""
-                    }
-                }
-                else -> ""
             }
+            else -> ""
+        }
 
-            val mergePath = when (model_id) {
-                1 -> "model/qwen2.5_merges.txt"
-                0 -> "model/phonelm_merges.txt"
-                2 -> "model/smollm_merges.txt"
-                else -> ""
-            }
-
-    //        val downloadsPath = downloadsPath.let {
-    //            if (!it.endsWith("/")) it.plus("/") else it
-    //        }
-            val downloadsPath = Environment.getExternalStorageDirectory().let {
-                val path = it.absolutePath + "/Download/"
-                if (!path.endsWith("/")) path.plus("/") else path
-            }
-
-
-            val load_model = when (modelType) {
-                1 -> 1
-                3, 4 -> {
-                    when (model_id) {
-                        0 -> 3
-                        1 -> 0
-                        2 -> 5
-                        else -> 0
-                    }
-                }
-                else -> 0
-            }
-
-            // Check and copy all the /assets into /sdcard/Download/model (only copy those who not exist)
+        val mergePath = when (model_id) {
+            1 -> "model/qwen2.5_merges.txt"
+            0 -> "model/phonelm_merges.txt"
+            2 -> "model/smollm_merges.txt"
+            else -> ""
+        }
+        try {
             copyAssetsIfNotExist(context)
+        } catch (e: Exception) {
+            FirebaseCrashlytics.getInstance().recordException(e)
+        }
 
-            viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val exceptionMessage = "Test exception 1.$modelType 2.$downloadsPath 3.$modelPath 4.$vacabPath 5.$mergePath"
+                FirebaseCrashlytics.getInstance().recordException(Exception(exceptionMessage))
+
+                // Log a custom message for context
+                FirebaseCrashlytics.getInstance().log("Starting JNIBridge.Init call")
+
                 val result = JNIBridge.Init(
-                    load_model,
+                    modelType,
                     downloadsPath,
                     modelPath,
-                    qnnmodelPath="",
+                    qnnmodelPath = "",
                     vacabPath,
                     mergePath,
                     _backendType
                 )
+
                 if (result) {
-                    addMessage(Message("Model ${MODEL_NAMES[load_model]} Loaded!", false, 0), true)
+                    addMessage(Message("Model ${MODEL_NAMES[model_id ?: 0]} Loaded!", false, 0), true)
                     _isLoading.postValue(false)
                     _isBusy.postValue(false)
                 } else {
-                    addMessage(
-                        Message(
-                            "Fail To Load Models! Please Check if models exist at /sdcard/Download/model and restart app.",
-                            false,
-                            0
-                        ), true
-                    )
+                    handleUIError(context, "Fail To Load Models! Please check files.")
                 }
+            } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
+                Log.e("PhotoViewModel", "Error during initialization: ${e.message}", e)
+                handleUIError(context, "Error initializing model: ${e.message}")
             }
-        } catch (e: Exception) {
-            // Log the exception to the file
-            logErrorToFile("Error initializing model: ${e.message}")
+        }
+
+    }
+
+    fun handleUIError(context: Context, errorMessage: String) {
+        // Log the error for debugging
+        Log.e("ChatViewModel", errorMessage)
+
+        // Add the error to the UI
+        viewModelScope.launch(Dispatchers.Main) {
+            addMessage(Message(errorMessage, false, 0), true)
+        }
+
+        // Show the error as a Toast for immediate feedback
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context.applicationContext, errorMessage, Toast.LENGTH_LONG).show()
+        }
+    }
+
+
+
+    fun handleError(context: Context, errorMessage: String) {
+        // Log the error
+        Log.e("ChatViewModel", errorMessage)
+
+        // Show error as a Toast (runs on main thread)
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+        }
+
+        // Optionally write the error to a file for debugging
+        try {
+            val errorLogFile = File(context.filesDir, "error_log.txt")
+            errorLogFile.appendText("$errorMessage\n")
+        } catch (fileException: Exception) {
+            Log.e("ChatViewModel", "Failed to write error to file: ${fileException.message}")
         }
     }
 
@@ -435,7 +391,7 @@ class VQAViewModel : ViewModel() {
             bitmap = Bitmap.createScaledBitmap(bitmap, 210, 453, true)
         }
         viewModelScope.launch(Dispatchers.IO) {
-            val result = JNIBridge.Init(1, downloadsPath, "model/phi3v.mllm", "", "model/vocab_uni.mllm")
+            val result = JNIBridge.Init(1, getDownloadsPath(context), "model/phi3v.mllm", "", "model/vocab_uni.mllm")
             result_ = result
             if (result && selectedMessage.value != null && selectedMessage.value!! > -1) {
                 sendMessage(messages[selectedMessage.value!!], context)
@@ -487,12 +443,11 @@ class SummaryViewModel:ViewModel(){
             Log.i("SummaryViewModel","id:$id,value:$value,isStream:$isStream")
             updateMessageText(value.trim().replace("|NEWLINE|","\n").replace("▁"," "))
         }
-//        initStatus()
     }
-    fun initStatus(){
+    fun initStatus(context: Context){
 
         viewModelScope.launch(Dispatchers.IO) {
-            val result =JNIBridge.Init(1,downloadsPath,"model/smollm.mllm","", "model/vocab_smollm.mllm")
+            val result =JNIBridge.Init(1,getDownloadsPath(context),"model/smollm.mllm","", "model/vocab_smollm.mllm")
             _result.postValue(result)
             if (!result){
                 updateMessageText("Fail to Load Models.")
@@ -560,7 +515,7 @@ class PhotoViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val result = JNIBridge.Init(
                 1,
-                downloadsPath,
+                getDownloadsPath(context),
                 "model/phi3v.mllm",
                 "",
                 "model/vocab_uni.mllm"
@@ -666,22 +621,34 @@ fun copyAssetsIfNotExist(context: Context) {
         "model/phi3v_vocab.mllm",
         "model/qwen2.5_merges.txt",
         "model/phonelm_merges.txt",
-        "model/smollm_merges.txt",
+        "model/smollm_merges.txt"
     )
 
-    val destinationDir = File("/sdcard/Download/model")
+    val destinationDir = File(getDownloadsPath(context), "model")
+    Log.i("destinationDir", "Resolved path: ${destinationDir.absolutePath}")
     if (!destinationDir.exists()) {
-        destinationDir.mkdirs()
+        if (destinationDir.mkdirs()) {
+            Log.i("destinationDir", "Created directory: ${destinationDir.absolutePath}")
+        } else {
+            Log.e("destinationDir", "Failed to create directory: ${destinationDir.absolutePath}")
+        }
     }
 
     assetsToCopy.forEach { asset ->
-        val destinationFile = File(destinationDir, asset.substringAfterLast("/"))
-        if (!destinationFile.exists()) {
-            context.assets.open(asset).use { inputStream ->
-                FileOutputStream(destinationFile).use { outputStream ->
-                    copyStream(inputStream, outputStream)
+        try {
+            val destinationFile = File(destinationDir, asset.substringAfterLast("/"))
+            if (!destinationFile.exists()) {
+                context.assets.open(asset).use { inputStream ->
+                    FileOutputStream(destinationFile).use { outputStream ->
+                        copyStream(inputStream, outputStream)
+                        Log.i("AssetCopy", "Copied: $asset to ${destinationFile.absolutePath}")
+                    }
                 }
+            } else {
+                Log.i("AssetCopy", "File already exists: ${destinationFile.absolutePath}")
             }
+        } catch (e: Exception) {
+            Log.e("AssetCopy", "Failed to copy: $asset", e)
         }
     }
 }
@@ -693,19 +660,10 @@ fun copyStream(input: InputStream, output: FileOutputStream) {
         output.write(buffer, 0, bytesRead)
     }
 }
-
-
-// Function to download a file from URL
-//suspend fun downloadFileFromUrl(context: Context, url: String, destinationFile: File) {
-//    try {
-//        // Perform the actual download in the background
-//        withContext(Dispatchers.IO) {
-//            val inputStream: InputStream = URL(url).openStream()
-//            FileOutputStream(destinationFile).use { outputStream ->
-//                copyStream(inputStream, outputStream)
-//            }
-//        }
-//    } catch (e: Exception) {
-//        e.printStackTrace() // Handle any errors during the download process
-//    }
-//}
+fun getDownloadsPath(context: Context): String {
+    if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+        return Environment.getExternalStorageDirectory().absolutePath + "/Download/"
+    } else {
+        return context.filesDir.absolutePath + "/Download/"
+    }
+}

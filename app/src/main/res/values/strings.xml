@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ChatLLM</string>
+    <string name="mail_subject">Crash Report from ChatLLM</string>
+    <string name="mail_body">Please find the attached crash report.</string>
 </resources>

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "660765115445",
-    "project_id": "ctqas-374d2",
-    "storage_bucket": "ctqas-374d2.firebasestorage.app"
+    "project_number": "500147627358",
+    "project_id": "chatllm-56e08",
+    "storage_bucket": "chatllm-56e08.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:660765115445:android:a5e73124460c6b3584dd7c",
+        "mobilesdk_app_id": "1:500147627358:android:14f023d021d688fb149bcf",
         "android_client_info": {
           "package_name": "org.saltedfish.chatbot"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAw8B4a-oBV0v0m4h5myr3KVfKUe1AGi_A"
+          "current_key": "AIzaSyBQPrdIUNL_-ygUFr4rq1llSUdTpDcJdsc"
         }
       ],
       "services": {

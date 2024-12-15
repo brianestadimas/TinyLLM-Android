@@ -1,6 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
+        google()
         mavenCentral()
     }
 
@@ -8,6 +9,9 @@ buildscript {
         // Android Gradle Plugin 4.1.0 or later supported
         classpath('com.android.tools.build:gradle:8.7.2')
         classpath("io.objectbox:objectbox-gradle-plugin:4.0.3")
+
+        classpath 'com.google.gms:google-services:4.3.15' // Google Services plugin
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
     }
 }
 plugins {

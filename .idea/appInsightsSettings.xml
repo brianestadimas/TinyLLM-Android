@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="org.saltedfish.chatbot" />
-                  <option name="mobileSdkAppId" value="1:660765115445:android:a5e73124460c6b3584dd7c" />
-                  <option name="projectId" value="ctqas-374d2" />
-                  <option name="projectNumber" value="660765115445" />
+                  <option name="mobileSdkAppId" value="1:500147627358:android:14f023d021d688fb149bcf" />
+                  <option name="projectId" value="chatllm-56e08" />
+                  <option name="projectNumber" value="500147627358" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

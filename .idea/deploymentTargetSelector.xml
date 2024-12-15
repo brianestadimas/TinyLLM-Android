@@ -4,14 +4,20 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-12-13T11:41:18.173049453Z">
+        <DropdownSelection timestamp="2024-12-14T18:08:33.361474767Z">
           <Target type="DEFAULT_BOOT">
-            <template>
-              <DeviceId pluginId="FirebaseDirectAccess" type="TEMPLATE" identifier="model_id=panther/33" />
-            </template>
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/brianrtx/.android/avd/Pixel_6_Pro_API_35.avd" />
+            </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="CrashReportActivity">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="CrashHandlerActivity">
+        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
   </component>
