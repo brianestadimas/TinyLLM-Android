@@ -57,7 +57,7 @@ Now my query is: %QUERY%
 <|im_end|>
 <|im_start|>assistant
 """
-val MODEL_NAMES = arrayOf("PhoneLM","Qwen2.5","SmoLLM","Phi3V", "SmoLLM", "SmoLLM")
+val MODEL_NAMES = arrayOf("PhoneLM","Qwen1.5","SmoLLM", "OpenELM", "Phi3V")
 val vision_model = "phi-3-vision-instruct-q4_k.mllm"
 val vision_vocab = "phi3v_vocab.mllm"
 class ChatViewModel : ViewModel() {
@@ -228,17 +228,11 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.Main) {
             // Inflate custom Toast layout
             // Create and show the Toast
-            val inflater = LayoutInflater.from(context)
-            val layout = inflater.inflate(R.layout.custom_progress_toast, null)
-            val toast = Toast(context.applicationContext).apply {
-                duration = Toast.LENGTH_LONG
-                view = layout
-            }
-            toast.show()
+
 
             // Determine model parameters
             val model_id = when (modelType) {
-                1 -> 3
+                1 -> 4
                 else -> modelId.value ?: 0
             }
 
@@ -247,8 +241,9 @@ class ChatViewModel : ViewModel() {
                 3 -> {
                     when (model_id) {
                         0 -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
-                        1 -> "qwen-2.5-1.5b-instruct-q4_0_4_4.mllm"
+                        1 -> "qwen-1.5-1.8b-chat-q4_0_4_4.mllm"
                         2 -> "smollm-1.7b-instruct-q4_0_4_4.mllm"
+                        3 -> "openelm-1.1b-Instruct-fp32.mllm"
                         else -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
                     }
                 }
@@ -260,8 +255,9 @@ class ChatViewModel : ViewModel() {
                 3 -> {
                     when (model_id) {
                         0 -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/resolve/main/phonelm-1.5b-instruct-q4_0_4_4.mllm"
-                        1 -> "https://huggingface.co/mllmTeam/qwen-2.5-1.5b-mllm/resolve/main/qwen-2.5-1.5b-instruct-q4_0_4_4.mllm"
+                        1 -> "https://huggingface.co/mllmTeam/qwen-1.5-1.8b-chat-mllm/resolve/main/qwen-1.5-1.8b-chat-q4_0_4_4.mllm"
                         2 -> "https://huggingface.co/mllmTeam/smollm-1.7b-instruct-mllm/resolve/main/smollm-1.7b-instruct-q4_0_4_4.mllm"
+                        3 -> "https://huggingface.co/mllmTeam/openelm-1.1b-mllm/resolve/main/openelm-1.1b-Instruct-fp32.mllm"
                         else -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/resolve/main/phonelm-1.5b-instruct-q4_0_4_4.mllm"
                     }
                 }
@@ -274,8 +270,9 @@ class ChatViewModel : ViewModel() {
                 3 -> {
                     when (model_id) {
                         0 -> "model/phonelm_vocab.mllm"
-                        1 -> "model/qwen2.5_vocab.mllm"
+                        1 -> "model/qwen_vocab.mllm"
                         2 -> "model/smollm_vocab.mllm"
+                        3 -> "model/llama2_hf_vocab.mllm"
                         else -> ""
                     }
                 }
@@ -285,7 +282,7 @@ class ChatViewModel : ViewModel() {
 
             var mergePath = when (model_id) {
                 0 -> "model/phonelm_merges.txt"
-                1 -> "model/qwen2.5_merges.txt"
+                1 -> "model/qwen_merges.txt"
                 2 -> "model/smollm_merges.txt"
                 else -> ""
             }
@@ -300,6 +297,13 @@ class ChatViewModel : ViewModel() {
             }
 
             if (!modelFile.exists()) {
+                val inflater = LayoutInflater.from(context)
+                val layout = inflater.inflate(R.layout.custom_progress_toast, null)
+                val toast = Toast(context.applicationContext).apply {
+                    duration = Toast.LENGTH_LONG
+                    view = layout
+                }
+                toast.show()
                 val downloadComplete = CompletableDeferred<Boolean>()
 
                 // Track the last Toast percentage to ensure we only show updates every 5%
@@ -340,8 +344,9 @@ class ChatViewModel : ViewModel() {
                 3, 4 -> {
                     when (model_id) {
                         0 -> 3
-                        1 -> 0
+                        1 -> 4
                         2 -> 5
+                        3 -> 6
                         else -> 0
                     }
                 }
@@ -364,7 +369,6 @@ class ChatViewModel : ViewModel() {
                     _isLoading.postValue(false)
                     _isBusy.postValue(false)
                     _downloadCompleted.postValue(true)
-                    toast.cancel()
                 } else {
                     handleDownloadError(context, "Fail To Load Models! Please check files.")
                 }
@@ -709,12 +713,13 @@ suspend fun copyAssetsIfNotExist(context: Context): Boolean {
     return withContext(Dispatchers.IO) {
         val assetsToCopy = listOf(
             "model/phonelm_vocab.mllm",
-            "model/qwen2.5_vocab.mllm",
+            "model/qwen_vocab.mllm",
             "model/smollm_vocab.mllm",
             "model/phi3v_vocab.mllm",
-            "model/qwen2.5_merges.txt",
+            "model/qwen_merges.txt",
             "model/phonelm_merges.txt",
-            "model/smollm_merges.txt"
+            "model/smollm_merges.txt",
+            "model/llama2_hf_vocab.mllm"
         )
 
         val destinationDir = File(context.cacheDir, "model")

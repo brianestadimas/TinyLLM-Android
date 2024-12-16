@@ -29,7 +29,8 @@ namespace mllm {
         Bert,
         PhoneLM,
         QWEN15,
-        SMOLLM
+        SMOLLM,
+        OPENELM
     };
 
     enum MLLMBackendType {

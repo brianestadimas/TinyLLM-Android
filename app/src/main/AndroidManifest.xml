@@ -38,7 +38,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
-        android:extractNativeLibs="true"
         android:theme="@style/Theme.ChatBot"
         tools:targetApi="31">
         <uses-native-library android:name="libcdsprpc.so"  android:required="false" />

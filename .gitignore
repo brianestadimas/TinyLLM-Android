@@ -14,3 +14,9 @@
 .cxx
 local.properties
 app/src/main/cpp/libs/*.a
+gradle
+
+# Added entries
+app/build
+app/src/main/cpp/libs/libmllm_lib.a
+
