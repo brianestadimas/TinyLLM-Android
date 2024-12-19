@@ -33,7 +33,11 @@ android {
 
         }
     }
+
     buildTypes {
+        customDebuggableBuildType {
+            debuggable true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -41,12 +45,18 @@ android {
                 nativeSymbolUploadEnabled true // Optional for native crash reporting
                 unstrippedNativeLibsDir "src/main/cpp/libs/"
             }
+            ndk {
+                debugSymbolLevel 'FULL' // Options: NONE, SYMBOL_TABLE, FULL
+            }
         }
         debug {
             // Optionally enable Crashlytics for debug builds
             firebaseCrashlytics {
                 nativeSymbolUploadEnabled true
                 mappingFileUploadEnabled false // Prevent uploading mapping files for debug
+            }
+            ndk {
+                debugSymbolLevel 'FULL' // Options: NONE, SYMBOL_TABLE, FULL
             }
         }
     }
@@ -81,6 +91,9 @@ android {
             path file('src/main/cpp/CMakeLists.txt')
             version '3.22.1'
         }
+    }
+    aaptOptions {
+        noCompress += ["so", "a"]
     }
 }
 

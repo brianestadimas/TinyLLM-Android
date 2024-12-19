@@ -78,6 +78,17 @@ Java_org_saltedfish_chatbot_JNIBridge_init(JNIEnv *env, jobject thiz, jint model
     const auto base_path_c = string(env->GetStringUTFChars(basePath, nullptr));
     const auto merge_path_c = string(env->GetStringUTFChars(mergePath, nullptr));
 
+    const auto full_weights_path = base_path_c + weights_path_c;
+    FILE* fp = fopen(full_weights_path.c_str(), "rb");
+    if (!fp) {
+        std::string err_msg = "Failed to open weights file at " + full_weights_path + ". Errno: " + std::to_string(errno);
+        jclass runtimeExceptionClass = env->FindClass("java/lang/RuntimeException");
+        if (runtimeExceptionClass) {
+            env->ThrowNew(runtimeExceptionClass, err_msg.c_str());
+        }
+        return JNI_FALSE;
+    }
+
 //    auto fpath = (base_path_c+weights_path_c).c_str();
 //    // fopen
 //    auto fp = fopen(fpath,"rb");

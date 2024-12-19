@@ -59,7 +59,7 @@ Now my query is: %QUERY%
 """
 val MODEL_NAMES = arrayOf("PhoneLM","Qwen1.5","SmoLLM", "OpenELM", "Phi3V")
 val vision_model = "phi-3-vision-instruct-q4_k.mllm"
-val vision_vocab = "phi3v_vocab.mllm"
+val vision_vocab = "model/phi3v_vocab.mllm"
 class ChatViewModel : ViewModel() {
 //    private var _inputText: MutableLiveData<String> = MutableLiveData<String>()
 //    val inputText: LiveData<String> = _inputText
@@ -373,9 +373,9 @@ class ChatViewModel : ViewModel() {
                     handleDownloadError(context, "Fail To Load Models! Please check files.")
                 }
 
-            } catch (e: Exception) {
+            } catch (e: RuntimeException) {
                 FirebaseCrashlytics.getInstance().recordException(e)
-                handleDownloadError(context, "Error initializing model: ${e.message}")
+//                handleDownloadError(context, "Error initializing model: ${e.message}")
             }
         }
     }
@@ -676,20 +676,20 @@ fun getImagePathFromUri(context: Context, uri: Uri): String? {
 /**
  * Copies the content from a Uri to a file in the cache directory and returns the file path.
  */
-fun copyUriToFile(context: Context, uri: Uri): String? {
-    return try {
-        val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-        val file = File(context.cacheDir, "image_${System.currentTimeMillis()}.png")
-        val outputStream = FileOutputStream(file)
-        inputStream?.copyTo(outputStream)
-        inputStream?.close()
-        outputStream.close()
-        file.absolutePath
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
+//fun copyUriToFile(context: Context, uri: Uri): String? {
+//    return try {
+//        val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+//        val file = File(context.cacheDir, "image_${System.currentTimeMillis()}.png")
+//        val outputStream = FileOutputStream(file)
+//        inputStream?.copyTo(outputStream)
+//        inputStream?.close()
+//        outputStream.close()
+//        file.absolutePath
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//        null
+//    }
+//}
 
 /**
  * Saves a Bitmap to a file and returns the file path.
@@ -722,7 +722,7 @@ suspend fun copyAssetsIfNotExist(context: Context): Boolean {
             "model/llama2_hf_vocab.mllm"
         )
 
-        val destinationDir = File(context.cacheDir, "model")
+        val destinationDir = File(getDownloadsPath(context), "model")
         if (!destinationDir.exists()) {
             if (!destinationDir.mkdirs()) {
                 Log.e("AssetCopy", "Failed to create directory: ${destinationDir.absolutePath}")
@@ -761,6 +761,6 @@ fun copyStream(input: InputStream, output: FileOutputStream) {
     }
 }
 fun getDownloadsPath(context: Context): String {
-//    return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath +"/"
-    return context.cacheDir.absolutePath + "/"
+    return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath +"/"
+//    return context.cacheDir.absolutePath + "/"
 }
