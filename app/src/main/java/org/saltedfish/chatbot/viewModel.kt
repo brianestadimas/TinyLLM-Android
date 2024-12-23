@@ -346,7 +346,6 @@ class ChatViewModel : ViewModel() {
                         0 -> 3
                         1 -> 4
                         2 -> 5
-                        3 -> 6
                         else -> 0
                     }
                 }

@@ -18,7 +18,7 @@
 #include <any>
 
 namespace mllm {
-    class Tokenizer;
+    // class Tokenizer;
     // class PreProcessor;
     class Module;
     class Tensor;
@@ -30,7 +30,6 @@ namespace mllm {
         PhoneLM,
         QWEN15,
         SMOLLM,
-        OPENELM
     };
 
     enum MLLMBackendType {
@@ -41,17 +40,13 @@ namespace mllm {
     typedef std::function<void(std::string, bool, std::vector<double>)> callback_t;
 
     class LibHelper {
-        // Context *c = nullptr;
-        // Net *net_ = nullptr;
-        // Executor *executor_ = nullptr;
         callback_t callback_ = [](std::string, bool, std::vector<double>) {
         };
 
-        std::shared_ptr<Tokenizer> tokenizer_;
+        std::any tokenizer_;
         // PreProcessor *processor_;
         std::shared_ptr<Module> module_;
         std::shared_ptr<Module> prefill_module_;
-        // Phi3VProcessor* phi3v_processor_ = nullptr;
         std::any phi3v_processor_;
 
         // Tokenizer *tokenizer_ = nullptr;
