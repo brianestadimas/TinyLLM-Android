@@ -44,6 +44,11 @@ Here are some previews of the ChatLLM app in action:
     <td style="text-align:center;">❌</td>
   </tr>
   <tr>
+    <td>OpenELM 1.1B (Removed)</td>
+    <td style="text-align:center;">✔️</td>
+    <td style="text-align:center;">❌</td>
+  </tr>
+  <tr>
     <td>Phi-3-Vision 3.8B</td>
     <td style="text-align:center;">✔️</td>
     <td style="text-align:center;">✔️</td>
