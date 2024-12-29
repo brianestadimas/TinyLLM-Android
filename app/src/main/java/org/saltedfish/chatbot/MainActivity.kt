@@ -224,17 +224,19 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = "home") {
                     composable("home") { Home(navController) }
                     composable(
-                        "chat/{id}?type={type}&device={device}",
+                        "chat/{id}?type={type}&device={device}&vision={vision}",
                         arguments = listOf(navArgument("id") { type = NavType.IntType },
                             navArgument("type") { type = NavType.IntType;defaultValue = 0 },
-                            navArgument("device") { type = NavType.IntType;defaultValue = 0 }
+                            navArgument("device") { type = NavType.IntType;defaultValue = 0 },
+                            navArgument("vision") { type = NavType.IntType;defaultValue = 1 }
                         )
                     ) {
                         Chat(
                             navController,
                             it.arguments?.getInt("type") ?: 3,
                             it.arguments?.getInt("id") ?: 0,
-                            it.arguments?.getInt("device") ?: 0
+                            it.arguments?.getInt("device") ?: 0,
+                            it.arguments?.getInt("vision") ?: 1,
                         )
                     }
                     composable("photo") {
@@ -243,9 +245,6 @@ class MainActivity : ComponentActivity() {
                     composable("vqa") {
                         VQA(navController)
                     }
-                    // A surface container using the 'background' color from the theme
-
-
                 }
             }
         }
@@ -1073,8 +1072,10 @@ fun Home(navController: NavController) {
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedIndex by remember { mutableStateOf(0) }
+    var selectedIndexVision by remember { mutableStateOf(1) }
     var selectedBackend by remember { mutableStateOf(0) }
-    val modelNames = listOf("PhoneLM", "Qwen 1.5", "SmolLM", "OpenELM")
+    val modelNames = listOf("PhoneLM", "Qwen 1.5", "SmolLM")
+    val modelNamesVision = listOf("Phi3-V", "Phi3-V Design")
     val deviceNames = listOf("CPU")
 
     Scaffold(
@@ -1106,6 +1107,7 @@ fun Home(navController: NavController) {
             MainEntryCards(
                 navController = navController,
                 selectedIndex = selectedIndex,
+                selectedIndexVision = selectedIndexVision,
                 selectedBackend = selectedBackend
             )
         }
@@ -1158,20 +1160,22 @@ fun Home(navController: NavController) {
                             .fillMaxWidth()
                             .padding(bottom = 10.dp)
                     ) {
-                        val modelName = "Phi-3 V"  // Fixed value
+                        modelNamesVision.forEachIndexed { index, s ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = modelNamesVision.size
+                                ),
+                                selected = selectedIndexVision == index + 1,
 
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = 0, // Only one button, so the index is 0
-                                count = 1   // Only one item
-                            ),
-                            selected = true, // Only one option, so it's always at index 0
-
-                            onClick = {
+                                onClick = {
+                                    selectedIndexVision = index + 1
+                                }
+                            ) {
+                                Text(text = s)
                             }
-                        ) {
-                            Text(text = modelName)  // Display the fixed value text
                         }
+
                     }
 
                     Text(
@@ -1215,12 +1219,14 @@ fun Chat(
     chatType: Int = 0,
     modelId: Int = 0,
     deviceId: Int = 0,
+    visionId: Int = 1,
     vm: ChatViewModel = viewModel()
 ) {
     LaunchedEffect(key1 = chatType, key2 = modelId) {
         vm.setModelType(chatType)
         vm.setModelId(modelId)
         vm.setBackendType(deviceId)
+        vm.setVisionId(visionId)
     }
 
     val previewUri by vm.previewUri.observeAsState()
@@ -1642,6 +1648,7 @@ fun MainEntryCards(
     modifier: Modifier = Modifier,
     navController: NavController,
     selectedIndex: Int = 0,
+    selectedIndexVision: Int = 1,
     selectedBackend: Int = 0
 ) {
     val context = LocalContext.current
@@ -1674,7 +1681,7 @@ fun MainEntryCards(
             EntryCard(icon = R.drawable.text,
                 backgroundColor = Color(0xEDADE6AA),
                 title = "Chat",
-                subtitle = "\" What is quantum computing....\" \n \"Any trending fashion....\" \n (If model not exist, you will be redirected to download)",
+                subtitle = "\" What is quantum computing....\" \n \"Any trending fashion....\"",
                 onClick = { navController.navigate("chat/$selectedIndex?type=3&device=$selectedBackend") })
 
         }
@@ -1684,9 +1691,8 @@ fun MainEntryCards(
                 backgroundColor = Purple80,
                 title = "Image Reader",
                 subtitle = "\" say..What is the content of the image?\" \n" +
-                        "\"Caption image....\" \n" +
-                        " (If model not exist, you will be redirected to download)",
-                onClick = { navController.navigate("chat/$selectedIndex?type=1") }
+                        "\"Caption image....\"",
+                onClick = { navController.navigate("chat/$selectedIndex?type=1&vision=$selectedIndexVision") }
 
             )
 
@@ -1733,7 +1739,7 @@ fun RowScope.EntryCard(
         onClick = onClick,
         modifier = Modifier
             .weight(0.5f)
-            .heightIn(min = 180.dp, max = 260.dp) // Control height directly
+            .heightIn(min = 160.dp, max = 230.dp) // Control height directly
             .padding(8.dp),
 //            .aspectRatio(0.8f),
         shape = RoundedCornerShape(10),

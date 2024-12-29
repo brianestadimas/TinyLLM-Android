@@ -18,7 +18,7 @@
 #include <any>
 
 namespace mllm {
-    // class Tokenizer;
+    class Tokenizer;
     // class PreProcessor;
     class Module;
     class Tensor;
@@ -43,8 +43,9 @@ namespace mllm {
         callback_t callback_ = [](std::string, bool, std::vector<double>) {
         };
 
-        std::any tokenizer_;
+        // std::any tokenizer_;
         // PreProcessor *processor_;
+        std::shared_ptr<Tokenizer> tokenizer_;
         std::shared_ptr<Module> module_;
         std::shared_ptr<Module> prefill_module_;
         std::any phi3v_processor_;
@@ -54,7 +55,7 @@ namespace mllm {
         PreDefinedModel model_ = PreDefinedModel::QWEN25;
         MLLMBackendType backend_ = MLLMBackendType::CPU;
         bool is_first_run_cond_ = true;
-        int tokens_limit = 4000;
+        int tokens_limit = 600;
         unsigned postProcessing(std::shared_ptr<Tensor> result, std::shared_ptr<Tensor> &out_result) const;
 
     public:

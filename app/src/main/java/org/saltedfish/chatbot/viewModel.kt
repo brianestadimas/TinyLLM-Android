@@ -57,8 +57,9 @@ Now my query is: %QUERY%
 <|im_end|>
 <|im_start|>assistant
 """
-val MODEL_NAMES = arrayOf("PhoneLM","Qwen1.5","SmoLLM", "OpenELM", "Phi3V")
-val vision_model = "phi-3-vision-instruct-q4_k.mllm"
+val MODEL_NAMES = arrayOf("PhoneLM","Qwen1.5","SmoLLM", "Phi3V", "Phi3V-Design")
+val vision_model = "phi3v_q4_k.mllm"
+val vision_model_finetuned = "phi3v_q4_k_finetuned.mllm"
 val vision_vocab = "model/phi3v_vocab.mllm"
 class ChatViewModel : ViewModel() {
 //    private var _inputText: MutableLiveData<String> = MutableLiveData<String>()
@@ -84,6 +85,8 @@ class ChatViewModel : ViewModel() {
     val isLoading = _isLoading
     private var _modelType = MutableLiveData<Int>(0)
     private var _modelId = MutableLiveData<Int>(0)
+    private var _visionId = MutableLiveData<Int>(0)
+    val visionId = _visionId
     val modelId = _modelId
     val modelType = _modelType
     private var profiling_time = MutableLiveData<DoubleArray>()
@@ -113,6 +116,9 @@ class ChatViewModel : ViewModel() {
     }
     fun setModelId(id:Int){
         _modelId.value = id
+    }
+    fun setVisionId(id:Int){
+        _visionId.value = id
     }
     fun setPreviewUri(uri: Uri?){
         _previewUri.value = uri
@@ -213,37 +219,33 @@ class ChatViewModel : ViewModel() {
 
 
     fun initStatus(context: Context, modelType: Int = _modelType.value ?: 0) {
-        val supportedABIs = android.os.Build.SUPPORTED_ABIS
-        if (supportedABIs.contains("arm64-v8a")) {
-            Log.i("Device ABI", "Device is arm64-v8a")
-        } else if (supportedABIs.contains("armeabi-v7a")) {
-            Log.i("Device ABI", "Device is armeabi-v7a")
-        } else if (supportedABIs.contains("x86")) {
-            Log.i("Device ABI", "Device is x86")
-        } else if (supportedABIs.contains("x86_64")) {
-            Log.i("Device ABI", "Device is x86_64")
-        } else {
-            Log.i("Device ABI", "Unknown ABI: ${supportedABIs.joinToString()}")
-        }
         viewModelScope.launch(Dispatchers.Main) {
-            // Inflate custom Toast layout
-            // Create and show the Toast
-
-
-            // Determine model parameters
+            val vision_id = visionId.value ?: 1
             val model_id = when (modelType) {
-                1 -> 4
+                1 -> {
+                    when (vision_id) {
+                        1 -> 3
+                        2 -> 4
+                        else -> 3
+                    }
+                }
                 else -> modelId.value ?: 0
             }
-
+            Log.i("Vision", "vision_id:$vision_id")
+            Log.i("ChatViewModel", "model_id:$model_id")
             val modelPath = when (modelType) {
-                1 -> vision_model
+                1 -> {
+                    when (vision_id) {
+                        1 -> vision_model
+                        2 -> vision_model_finetuned
+                        else -> vision_model
+                    }
+                }
                 3 -> {
                     when (model_id) {
                         0 -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
                         1 -> "qwen-1.5-1.8b-chat-q4_0_4_4.mllm"
                         2 -> "smollm-1.7b-instruct-q4_0_4_4.mllm"
-                        3 -> "openelm-1.1b-Instruct-fp32.mllm"
                         else -> "phonelm-1.5b-instruct-q4_0_4_4.mllm"
                     }
                 }
@@ -257,11 +259,16 @@ class ChatViewModel : ViewModel() {
                         0 -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/resolve/main/phonelm-1.5b-instruct-q4_0_4_4.mllm"
                         1 -> "https://huggingface.co/mllmTeam/qwen-1.5-1.8b-chat-mllm/resolve/main/qwen-1.5-1.8b-chat-q4_0_4_4.mllm"
                         2 -> "https://huggingface.co/mllmTeam/smollm-1.7b-instruct-mllm/resolve/main/smollm-1.7b-instruct-q4_0_4_4.mllm"
-                        3 -> "https://huggingface.co/mllmTeam/openelm-1.1b-mllm/resolve/main/openelm-1.1b-Instruct-fp32.mllm"
                         else -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/resolve/main/phonelm-1.5b-instruct-q4_0_4_4.mllm"
                     }
                 }
-                1 -> "https://huggingface.co/mllmTeam/phi-3-vision-instruct-mllm/resolve/main/phi-3-vision-instruct-q4_k.mllm"
+                1 -> {
+                    when (vision_id) {
+                        1 -> "https://huggingface.co/brianestadimas/Phi-3-Vision-Q4-MLLM/resolve/main/phi3v_q4_k.mllm"
+                        2 -> "https://huggingface.co/brianestadimas/Phi-3-Vision-Q4-Finetuned-MLLM/resolve/main/phi3v_q4_k_finetuned.mllm"
+                        else -> "https://huggingface.co/brianestadimas/Phi-3-Vision-Q4-MLLM/resolve/main/phi3v_q4_k.mllm"
+                    }
+                }
                 else -> "https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/resolve/main/phonelm-1.5b-instruct-q4_0_4_4.mllm"
             }
 
@@ -272,7 +279,6 @@ class ChatViewModel : ViewModel() {
                         0 -> "model/phonelm_vocab.mllm"
                         1 -> "model/qwen_vocab.mllm"
                         2 -> "model/smollm_vocab.mllm"
-                        3 -> "model/llama2_hf_vocab.mllm"
                         else -> ""
                     }
                 }
