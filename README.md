@@ -1,66 +1,83 @@
-**mllm Chat Bot** is an Android application based on the multimodal LLM inference engine [**mllm**](https://github.com/UbiquitousLearning/mllm). It supports text/image conversations, Android Intent Invocation, and can support the use of CPU and some Hexagon NPUs.  
+# ChatLLM
 
-> [!NOTE]  
-> ChatBot is a demo app of [MLLM Engine](https://github.com/UbiquitousLearning/mllm). Any error report or feature request should be opened in [**mllm**](https://github.com/UbiquitousLearning/mllm) Github Repo.
+**ChatLLM** is an Android application based on the multimodal LLM inference engine [**mllm**](https://github.com/UbiquitousLearning/mllm). It supports text and image conversations offline.
 
-## Supported Functions  
+---
+
+## Preview
+
+Here are some previews of the ChatLLM app in action:
+
+![Preview 1](preview/image1.jpg)
+![Preview 2](preview/image2.jpg)
+![Preview 3](preview/image3.jpg)
+![Preview 4](preview/image4.jpg)
+
+---
+
+## Download APK
+[Download the Release APK](https://drive.google.com/file/d/1YeTo7uHGYNoEKGhmvzDpBiKOpWn4f7mA/view?usp=drive_link)
+
+## Supported Models and Functions  
 
 <table>
   <tr>
     <th>Model</th>
-    <th>Backend</th>
     <th style="text-align:center;">Chat</th>
-    <th style="text-align:center;">Intent Invocation</th>
+    <th style="text-align:center;">Image Chat</th>
   </tr>
   <tr>
-    <td rowspan="2">PhoneLM 1.5B</td>
-    <td>CPU</td>
+    <td>PhoneLM 1.5B</td>
+    <td style="text-align:center;">✔️</td>
+    <td style="text-align:center;">❌</td>
+  </tr>
+  <tr>
+    <td>Qwen1.5 1.8B</td>
+    <td style="text-align:center;">✔️</td>
+    <td style="text-align:center;">❌</td>
+  </tr>
+  <tr>
+    <td>SmolLM 1.7B</td>
+    <td style="text-align:center;">✔️</td>
+    <td style="text-align:center;">❌</td>
+  </tr>
+  <tr>
+    <td>Phi-3-Vision 3.8B</td>
     <td style="text-align:center;">✔️</td>
     <td style="text-align:center;">✔️</td>
   </tr>
   <tr>
-    <td>NPU</td>
+    <td>Phi-3-Vision Finetuned 3.8B</td>
     <td style="text-align:center;">✔️</td>
     <td style="text-align:center;">✔️</td>
-  </tr>
-  <tr>
-    <td rowspan="2">Qwen-2.5 1.5B</td>
-    <td>CPU</td>
-    <td style="text-align:center;">✔️</td>
-    <td style="text-align:center;">✔️</td>
-  </tr>
-  <tr>
-    <td>NPU</td>
-    <td style="text-align:center;"></td>
-    <td style="text-align:center;"></td>
-  </tr>
-  <tr>
-    <td rowspan="2">SmolLM 1.7B</td>
-    <td>CPU</td>
-    <td style="text-align:center;">✔️</td>
-    <td style="text-align:center;"></td>
-  </tr>
-  <tr>
-    <td>NPU</td>
-    <td style="text-align:center;">✔️</td>
-    <td style="text-align:center;"></td>
-  </tr>
-  <tr>
-    <td>Fuyu 8B</td>
-    <td>CPU</td>
-    <td style="text-align:center;">✔️</td>
-    <td style="text-align:center;"></td>
   </tr>
 </table>
 
+---
 
-## How to Build
+## How to Use on Android
 
-### Get the Code
+1. Install and open the `ChatLLM.apk`, give permission to manage files.
+2. Select the models in the settings menu.
+3. Use the **Image Reader** or **Chat** options.
+4. Wait for the model to be downloaded before starting conversations.
 
+---
+
+## How to Run on Android Studio
+
+### Step 1: Download the Library
+[Download `libmllm_lib.a`](https://drive.google.com/file/d/1YeTo7uHGYNoEKGhmvzDpBiKOpWn4f7mA/view?usp=drive_link).
+
+### Step 2: Place the Library
+Put the downloaded `libmllm_lib.a` file into the following directory:
 ```bash
-git clone https://github.com/lx200916/ChatBotApp
+app/src/main/cpp/libs
 ```
+
+### Step 3: Build and Run on Android Studio
+
+## How to Build Manually
 
 ### Build JNI Lib
 Get mllm codes:
@@ -91,51 +108,13 @@ cmake .. \
 
 make mllm_lib -j$(nproc)
 ```
+
+> **Note**  
+> ChatLLM credits the [MLLM Engine](https://github.com/UbiquitousLearning/mllm) and SaltedFish.
+
+---
 Copy mllm_lib to ChatBotApp:
 ```bash
 cp ./libmllm_lib.a ChatBotApp/app/src/main/cpp/libs/
 ```
 
-### Download mllm models
-You need to download mllm models from Web.
-|  |   |
-|-------|--------|
-|[gte-small-fp32.mllm](https://huggingface.co/mllmTeam/gte-small-mllm/blob/main/gte-small-fp32.mllm) | |
-|[phonelm-1.5b-instruct-q4_0_4_4.mllm](https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-q4_0_4_4.mllm)  |[phonelm-1.5b-instruct-int8.mllm](https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-instruct-int8.mllm) | 
-|[phonelm-1.5b-call-q8_0.mllm](https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-call-q8_0.mllm) |[phonelm-1.5b-call-int8.mllm](https://huggingface.co/mllmTeam/phonelm-1.5b-mllm/blob/main/phonelm-1.5b-call-int8.mllm) |
-|[qwen-2.5-1.5b-instruct-q4_0_4_4.mllm](https://huggingface.co/mllmTeam/qwen-2.5-1.5b-mllm/blob/main/qwen-2.5-1.5b-instruct-q4_0_4_4.mllm) ||
-|[qwen-2.5-1.5b-call-q4_0_4_4.mllm](https://huggingface.co/mllmTeam/qwen-2.5-1.5b-mllm/blob/main/qwen-2.5-1.5b-call-q4_0_4_4.mllm) ||
-|[qwen-1.5-1.8b-chat-q4_0_4_4.mllm](https://huggingface.co/mllmTeam/qwen-1.5-1.8b-chat-mllm/blob/main/qwen-1.5-1.8b-chat-q4_0_4_4.mllm) |[qwen-1.5-1.8b-chat-int8.mllm](https://huggingface.co/mllmTeam/qwen-1.5-1.8b-chat-mllm/blob/main/qwen-1.5-1.8b-chat-int8.mllm) | 
-|[fuyu-8b-q4_k.mllm](https://huggingface.co/mllmTeam/fuyu-8b-mllm/blob/main/fuyu-8b-q4_k.mllm) | |
-
-### Move models to Phone
-Then you need to move these models and vocab files from [`mllm/vocab`](https://github.com/UbiquitousLearning/mllm/tree/main/vocab) to your Android Phone's File Path `/sdcard/Download/model/`. The following files are required to exist in  `/sdcard/Download/model/`:
-```bash
-/sdcard/Download/model/
-|-- gte-small-fp32.mllm
-|-- phonelm-1.5b-instruct-int8.mllm
-|-- phonelm-1.5b-instruct-q4_0_4_4.mllm 
-|-- phonelm-1.5b-call-int8.mllm
-|-- phonelm-1.5b-call-q8_0.mllm
-|-- qwen-2.5-1.5b-call-q4_0_4_4.mllm
-|-- qwen-2.5-1.5b-instruct-q4_0_4_4.mllm
-|-- qwen-1.5-1.8b-chat-int8.mllm
-|-- qwen-1.5-1.8b-chat-q4_0_4_4.mllm
-|-- fuyu-8b-q4_k.mllm 
-|-- gte_vocab.mllm
-|-- phonelm_vocab.mllm
-|-- phonelm_merges.txt   
-|-- qwen_vocab.mllm
-|-- qwen_merges.txt
-|-- qwen2.5_vocab.mllm               
-|-- qwen2.5_merges.txt
-|-- fuyu_vocab.mllm
-```
-
-### Build
-Now you can import the project into Android Studio and build it.
-
-If you do not use Android Studio, you may need to manually set up JDK(17+) and Android SDK(30+) environment, and then build it with gradle.
-```bash
-./gradlew assembleDebug
-```
