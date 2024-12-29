@@ -55,6 +55,8 @@ Here are some previews of the ChatLLM app in action:
   </tr>
 </table>
 
+The model can be found in repository [Huggingface](https://huggingface.co/brianestadimas). It will be automatically downloaded when loading the model if it not found in phone download storage.
+
 ---
 
 ## How to Use on Android
