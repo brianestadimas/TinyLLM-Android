@@ -8,10 +8,12 @@
 
 Here are some previews of the ChatLLM app in action:
 
-![Preview 1](preview/image1.jpg)
-![Preview 2](preview/image2.jpg)
-![Preview 3](preview/image3.jpg)
-![Preview 4](preview/image4.jpg)
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <img src="preview/image1.jpg" alt="Preview 1" width="24%" />
+    <img src="preview/image2.jpg" alt="Preview 2" width="24%" />
+    <img src="preview/image3.jpg" alt="Preview 3" width="24%" />
+    <img src="preview/image4.jpg" alt="Preview 4" width="24%" />
+</div>
 
 ---
 
