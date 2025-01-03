@@ -2,6 +2,7 @@
 
 
 **ChatLLM** is an Android application based on the multimodal LLM inference engine [**mllm**](https://github.com/UbiquitousLearning/mllm). It supports text and image conversations offline.
+
 ---
 
 [GitHub Repo LINK](https://github.com/brianestadimas/TinyLLM-Android)
@@ -122,12 +123,12 @@ cmake .. \
 make mllm_lib -j$(nproc)
 ```
 
-> **Note**  
-> ChatLLM credits the [MLLM Engine](https://github.com/UbiquitousLearning/mllm) and SaltedFish.
-
 ---
 Copy mllm_lib to ChatBotApp:
 ```bash
 cp ./libmllm_lib.a ChatBotApp/app/src/main/cpp/libs/
 ```
+
+> **Note**  
+> ChatLLM credits the [MLLM Engine](https://github.com/UbiquitousLearning/mllm) and SaltedFish.
 
