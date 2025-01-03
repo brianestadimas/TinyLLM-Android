@@ -1,7 +1,8 @@
 # ChatLLM / TinyLLM on Android
 
 **ChatLLM** is an Android application based on the multimodal LLM inference engine [**mllm**](https://github.com/UbiquitousLearning/mllm). It supports text and image conversations offline.
-
+[GitHub Repo LINK](https://github.com/brianestadimas/TinyLLM-Android)
+[![Star this Repo](https://img.shields.io/github/stars/brianestadimas/TinyLLM-Android.svg?style=social&label=Star)](https://github.com/brianestadimas/TinyLLM-Android/stargazers)
 ---
 
 ## Preview
