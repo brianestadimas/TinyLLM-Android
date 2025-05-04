@@ -81,7 +81,7 @@ The model can be found in repository [Huggingface](https://huggingface.co/briane
 ## How to Run on Android Studio
 
 ### Step 1: Download the Library
-[Download `libmllm_lib.a`](https://drive.google.com/file/d/1YeTo7uHGYNoEKGhmvzDpBiKOpWn4f7mA/view?usp=drive_link).
+[Download `libmllm_lib.a`](https://drive.google.com/drive/folders/11_Z6wzfVp58uAa7Yi5Xip5nI_olm0vzy?usp=sharing).
 
 ### Step 2: Place the Library
 Put the downloaded `libmllm_lib.a` file into the following directory:
